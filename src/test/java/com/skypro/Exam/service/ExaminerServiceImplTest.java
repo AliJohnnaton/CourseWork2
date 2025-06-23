@@ -1,69 +1,48 @@
 package com.skypro.Exam.service;
 
 import com.skypro.Exam.model.Question;
-import com.skypro.Exam.repository.interfaces.QuestionRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.skypro.Exam.service.interfaces.QuestionService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class ExaminerServiceImplTest {
-    private final Question javaQuestion1 = new Question("Q1", "A1");
-    private final Question javaQuestion2 = new Question("Q2", "A2");
+    private final Question javaQuestion = new Question("Java Q", "A");
+    private final Question mathQuestion = new Question("2 + 2", "4");
+    @Mock
+    private QuestionService javaService;
+    @Mock
+    private QuestionService mathService;
+    @InjectMocks
     private ExaminerServiceImpl examinerService;
-
-    @BeforeEach
-    void setUp() {
-        JavaQuestionService javaService = new JavaQuestionService(new TestQuestionRepository());
-        MathQuestionService mathService = new MathQuestionService();
-        javaService.add(javaQuestion1.getQuestion(), javaQuestion1.getAnswer());
-        javaService.add(javaQuestion2.getQuestion(), javaQuestion2.getAnswer());
-        examinerService = new ExaminerServiceImpl(Set.of(javaService, mathService));
-    }
-
-    @Test
-    void getQuestions_shouldReturnCorrectAmount() {
-        Set<Question> result = (Set<Question>) examinerService.getQuestions(2);
-        assertEquals(2, result.size());
-    }
-
-    @Test
-    void getQuestions_shouldThrowWhenNotEnoughQuestions() {
-        assertThrows(ResponseStatusException.class, () -> examinerService.getQuestions(3));
-    }
 
     @Test
     void getQuestions_shouldReturnMixedQuestions() {
-        Set<Question> result = (Set<Question>) examinerService.getQuestions(2);
-        assertTrue(result.stream().anyMatch(q ->
-                q.getQuestion().equals(javaQuestion1.getQuestion()) ||
-                        q.getQuestion().equals(javaQuestion2.getQuestion())));
-        assertTrue(result.stream().anyMatch(q -> q.getQuestion().matches("^\\d.+")));
+        when(javaService.getRandomQuestion()).thenReturn(javaQuestion);
+        when(mathService.getRandomQuestion()).thenReturn(mathQuestion);
+
+        Set<Question> result = examinerService.getQuestions(2);
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains(javaQuestion));
+        assertTrue(result.contains(mathQuestion));
     }
 
-    private static class TestQuestionRepository implements QuestionRepository {
-        private final Set<Question> questions = new HashSet<>();
+    @Test
+    void getQuestions_shouldThrowWhenNotEnough() {
+        when(javaService.getAll()).thenReturn(Set.of(javaQuestion));
+        when(mathService.getAll()).thenThrow(UnsupportedOperationException.class);
 
-        @Override
-        public Question add(Question question) {
-            questions.add(question);
-            return question;
-        }
-
-        @Override
-        public Question remove(Question question) {
-            questions.remove(question);
-            return question;
-        }
-
-        @Override
-        public Collection<Question> getAll() {
-            return new HashSet<>(questions);
-        }
+        assertThrows(ResponseStatusException.class,
+                () -> examinerService.getQuestions(2));
     }
 }
