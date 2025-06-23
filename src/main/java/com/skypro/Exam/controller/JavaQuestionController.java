@@ -15,7 +15,7 @@ import java.util.Collection;
 public class JavaQuestionController {
     private final QuestionService questionService;
 
-    public JavaQuestionController(@Qualifier("javaQuestionService") QuestionService questionService) {
+    public JavaQuestionController(@Qualifier("java") QuestionService questionService) {
         this.questionService = questionService;
     }
     @GetMapping("/add")

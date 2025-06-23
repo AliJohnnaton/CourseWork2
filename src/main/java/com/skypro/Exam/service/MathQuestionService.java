@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Collection;
 import java.util.Random;
 
-@Service("mathQuestionService")
+@Service("math")
 public class MathQuestionService implements QuestionService {
     private final Random random = new Random();
 

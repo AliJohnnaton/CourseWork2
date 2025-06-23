@@ -3,14 +3,12 @@ package com.skypro.Exam.service;
 import com.skypro.Exam.model.Question;
 import com.skypro.Exam.repository.interfaces.QuestionRepository;
 import com.skypro.Exam.service.interfaces.QuestionService;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Random;
 
-@Primary
-@Service("javaQuestionService")
+@Service("java")
 public class JavaQuestionService implements QuestionService {
     private final QuestionRepository repository;
     private final Random random = new Random();
